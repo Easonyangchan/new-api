@@ -237,6 +237,11 @@ func ProcessAliOtherRatios(aliReq *AliVideoRequest) (map[string]float64, error) 
 			"480P": 1,
 			"720P": 0.9 / 0.5,
 		},
+		"happyhorse-1.1-t2v": {
+			"480P":  1,
+			"720P":  2,
+			"1080P": 1.2 / 0.45,
+		},
 	}
 	var resolution string
 
