@@ -118,6 +118,9 @@ function resolveModelProvider(modelName: string): ModelProvider | null {
   if (hasAny(['command-', 'cohere-'])) {
     return { icon: 'Cohere.Color', label: 'Cohere' }
   }
+  if (hasAny(['happyhorse'])) {
+    return { icon: 'Hedra', label: 'HappyHorse' }
+  }
 
   return null
 }
