@@ -170,3 +170,164 @@ func TestConvertToAliRequestWan25I2VKeepsLegacyImgURL(t *testing.T) {
 	require.Contains(t, string(body), `"img_url"`)
 	require.NotContains(t, string(body), `"media"`)
 }
+
+func TestProcessAliOtherRatiosWan3(t *testing.T) {
+	tests := []struct {
+		name       string
+		model      string
+		resolution string
+		want       map[string]float64
+	}{
+		{
+			name:       "wan3.0-video 480P",
+			model:      "wan3.0-video",
+			resolution: "480P",
+			want:       map[string]float64{"resolution-480P": 1},
+		},
+		{
+			name:       "wan3.0-video 720P",
+			model:      "wan3.0-video",
+			resolution: "720P",
+			want:       map[string]float64{"resolution-720P": 2},
+		},
+		{
+			name:       "wan3.0-video 1080P",
+			model:      "wan3.0-video",
+			resolution: "1080P",
+			want:       map[string]float64{"resolution-1080P": 4},
+		},
+		{
+			name:       "wan3.0-video-prime 480P",
+			model:      "wan3.0-video-prime",
+			resolution: "480P",
+			want:       map[string]float64{"resolution-480P": 1},
+		},
+		{
+			name:       "wan3.0-video-prime 720P",
+			model:      "wan3.0-video-prime",
+			resolution: "720P",
+			want:       map[string]float64{"resolution-720P": 2},
+		},
+		{
+			name:       "wan3.0-video-prime 1080P",
+			model:      "wan3.0-video-prime",
+			resolution: "1080P",
+			want:       map[string]float64{"resolution-1080P": 4},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			aliReq := &AliVideoRequest{
+				Model: tt.model,
+				Parameters: &AliVideoParameters{
+					Resolution: tt.resolution,
+				},
+			}
+			got, err := ProcessAliOtherRatios(aliReq)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestProcessAliOtherRatiosWan27(t *testing.T) {
+	tests := []struct {
+		name       string
+		model      string
+		resolution string
+		want       map[string]float64
+	}{
+		{
+			name:       "wan2.7-i2v 720P",
+			model:      "wan2.7-i2v",
+			resolution: "720P",
+			want:       map[string]float64{"resolution-720P": 1},
+		},
+		{
+			name:       "wan2.7-i2v 1080P",
+			model:      "wan2.7-i2v",
+			resolution: "1080P",
+			want:       map[string]float64{"resolution-1080P": 1 / 0.6},
+		},
+		{
+			name:       "wan2.7-t2v 720P",
+			model:      "wan2.7-t2v",
+			resolution: "720P",
+			want:       map[string]float64{"resolution-720P": 1},
+		},
+		{
+			name:       "wan2.7-t2v 1080P",
+			model:      "wan2.7-t2v",
+			resolution: "1080P",
+			want:       map[string]float64{"resolution-1080P": 1 / 0.6},
+		},
+		{
+			name:       "wan2.7-videoedit 720P",
+			model:      "wan2.7-videoedit",
+			resolution: "720P",
+			want:       map[string]float64{"resolution-720P": 1},
+		},
+		{
+			name:       "wan2.7-videoedit 1080P",
+			model:      "wan2.7-videoedit",
+			resolution: "1080P",
+			want:       map[string]float64{"resolution-1080P": 1 / 0.6},
+		},
+		{
+			name:       "wan2.7-r2v dated prefix match 720P",
+			model:      "wan2.7-r2v-2026-06-12",
+			resolution: "720P",
+			want:       map[string]float64{"resolution-720P": 1},
+		},
+		{
+			name:       "wan2.7-r2v dated prefix match 1080P",
+			model:      "wan2.7-r2v-2026-06-12",
+			resolution: "1080P",
+			want:       map[string]float64{"resolution-1080P": 1 / 0.6},
+		},
+		{
+			name:       "wan2.7-i2v unknown resolution no match",
+			model:      "wan2.7-i2v",
+			resolution: "2k",
+			want:       map[string]float64{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			aliReq := &AliVideoRequest{
+				Model: tt.model,
+				Parameters: &AliVideoParameters{
+					Resolution: tt.resolution,
+				},
+			}
+			got, err := ProcessAliOtherRatios(aliReq)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestLookupAliRatiosPrefixMatch(t *testing.T) {
+	ratios := map[string]map[string]float64{
+		"wan2.7-r2v": {"720P": 1, "1080P": 1 / 0.6},
+	}
+
+	tests := []struct {
+		name  string
+		model string
+		want  bool
+	}{
+		{name: "exact match", model: "wan2.7-r2v", want: true},
+		{name: "dated prefix match", model: "wan2.7-r2v-2026-06-12", want: true},
+		{name: "no match", model: "wan2.7-i2v", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, ok := lookupAliRatios(tt.model, ratios)
+			require.Equal(t, tt.want, ok)
+		})
+	}
+}

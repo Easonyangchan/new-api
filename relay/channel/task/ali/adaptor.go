@@ -199,9 +199,53 @@ func sizeToResolution(size string) (string, error) {
 	return "", fmt.Errorf("invalid size: %s", size)
 }
 
+// lookupAliRatios 按模型名查分辨率比值表。优先精确匹配；未命中时
+// 取最长前缀匹配（如 wan2.7-r2v-2026-06-12 → wan2.7-r2v）。
+func lookupAliRatios(model string, aliRatios map[string]map[string]float64) (map[string]float64, bool) {
+	if ratios, ok := aliRatios[model]; ok {
+		return ratios, true
+	}
+	var matched string
+	for key := range aliRatios {
+		if len(key) > len(matched) && strings.HasPrefix(model, key) {
+			matched = key
+		}
+	}
+	if matched == "" {
+		return nil, false
+	}
+	return aliRatios[matched], true
+}
+
 func ProcessAliOtherRatios(aliReq *AliVideoRequest) (map[string]float64, error) {
 	otherRatios := make(map[string]float64)
 	aliRatios := map[string]map[string]float64{
+		"wan3.0-video-prime": {
+			"480P":  1,
+			"720P":  2,
+			"1080P": 4,
+		},
+		"wan3.0-video": {
+			"480P":  1,
+			"720P":  2,
+			"1080P": 4,
+		},
+		"wan2.7-r2v": {
+			"720P":  1,
+			"1080P": 1 / 0.6,
+		},
+		"wan2.7-videoedit": {
+			"720P":  1,
+			"1080P": 1 / 0.6,
+		},
+		"wan2.7-t2v": {
+			"720P":  1,
+			"1080P": 1 / 0.6,
+		},
+		"wan2.7-i2v": {
+			"720P":  1,
+			"1080P": 1 / 0.6,
+		},
 		"wan2.6-i2v": {
 			"720P":  1,
 			"1080P": 1 / 0.6,
@@ -284,7 +328,7 @@ func ProcessAliOtherRatios(aliReq *AliVideoRequest) (map[string]float64, error) 
 			resolution = resolution + "P"
 		}
 	}
-	if otherRatio, ok := aliRatios[aliReq.Model]; ok {
+	if otherRatio, ok := lookupAliRatios(aliReq.Model, aliRatios); ok {
 		if ratio, ok := otherRatio[resolution]; ok {
 			otherRatios[fmt.Sprintf("resolution-%s", resolution)] = ratio
 		}
