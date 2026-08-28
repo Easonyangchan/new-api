@@ -220,16 +220,6 @@ func lookupAliRatios(model string, aliRatios map[string]map[string]float64) (map
 func ProcessAliOtherRatios(aliReq *AliVideoRequest) (map[string]float64, error) {
 	otherRatios := make(map[string]float64)
 	aliRatios := map[string]map[string]float64{
-		"wan3.0-video-prime": {
-			"480P":  1,
-			"720P":  2,
-			"1080P": 4,
-		},
-		"wan3.0-video": {
-			"480P":  1,
-			"720P":  2,
-			"1080P": 4,
-		},
 		"wan2.7-r2v": {
 			"720P":  1,
 			"1080P": 1 / 0.6,

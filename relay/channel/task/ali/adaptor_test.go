@@ -171,66 +171,6 @@ func TestConvertToAliRequestWan25I2VKeepsLegacyImgURL(t *testing.T) {
 	require.NotContains(t, string(body), `"media"`)
 }
 
-func TestProcessAliOtherRatiosWan3(t *testing.T) {
-	tests := []struct {
-		name       string
-		model      string
-		resolution string
-		want       map[string]float64
-	}{
-		{
-			name:       "wan3.0-video 480P",
-			model:      "wan3.0-video",
-			resolution: "480P",
-			want:       map[string]float64{"resolution-480P": 1},
-		},
-		{
-			name:       "wan3.0-video 720P",
-			model:      "wan3.0-video",
-			resolution: "720P",
-			want:       map[string]float64{"resolution-720P": 2},
-		},
-		{
-			name:       "wan3.0-video 1080P",
-			model:      "wan3.0-video",
-			resolution: "1080P",
-			want:       map[string]float64{"resolution-1080P": 4},
-		},
-		{
-			name:       "wan3.0-video-prime 480P",
-			model:      "wan3.0-video-prime",
-			resolution: "480P",
-			want:       map[string]float64{"resolution-480P": 1},
-		},
-		{
-			name:       "wan3.0-video-prime 720P",
-			model:      "wan3.0-video-prime",
-			resolution: "720P",
-			want:       map[string]float64{"resolution-720P": 2},
-		},
-		{
-			name:       "wan3.0-video-prime 1080P",
-			model:      "wan3.0-video-prime",
-			resolution: "1080P",
-			want:       map[string]float64{"resolution-1080P": 4},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			aliReq := &AliVideoRequest{
-				Model: tt.model,
-				Parameters: &AliVideoParameters{
-					Resolution: tt.resolution,
-				},
-			}
-			got, err := ProcessAliOtherRatios(aliReq)
-			require.NoError(t, err)
-			require.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestProcessAliOtherRatiosWan27(t *testing.T) {
 	tests := []struct {
 		name       string
